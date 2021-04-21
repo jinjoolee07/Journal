@@ -9,43 +9,17 @@ import Foundation
 
 class EntryController {
     
-    static let sharedInstance = EntryController()
-    
-    var entries: [Entry] = []
-    
-    func createEntry(title: String, body: String) {
+    static func createEntryWith(title: String, body: String, journal: Journal) {
         let newEntry = Entry(title: title, body: body)
-        entries.append(newEntry)
-        saveToPersistentStorage()
+        JournalController.sharedInstanstce.addEntryTo(entry: newEntry, journal: journal)
     }
     
-    func deleteEntry(entry: Entry) {
-        guard let index = entries.firstIndex(of: entry) else { return }
-        entries.remove(at: index)
+    static func deleteEntry(entry: Entry, journal: Journal) {
+        JournalController.sharedInstanstce.removeEntryFrom(entry: entry, journal: journal)
     }
     
-    // MARK: - Persistence
-    private func createPersistenceStore() -> URL {
-        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectoryURL = urls[0].appendingPathComponent("Journal.json")
-        return documentsDirectoryURL
-    }
-    
-    private func saveToPersistentStorage() {
-        do {
-            let data = try JSONEncoder().encode(entries)
-            try data.write(to: createPersistenceStore())
-        } catch {
-            print("Error encoding songs")
-        }
-    }
-    
-    func loadFromPersistenceStore() {
-        do {
-            let data = try Data(contentsOf: createPersistenceStore())
-            entries = try JSONDecoder().decode([Entry].self, from: data)
-        } catch {
-            print("Error in decoding")
-        }
+    static func updateEntry(entry: Entry, newTitle: String, newBody: String) {
+        entry.title = newTitle
+        entry.body = newBody
     }
 }

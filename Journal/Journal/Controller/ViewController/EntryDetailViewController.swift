@@ -10,6 +10,7 @@ import UIKit
 class EntryDetailViewController: UIViewController {
     
     var entry: Entry?
+    var journal: Journal?
     
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var bodyTextField: UITextField!
@@ -22,14 +23,17 @@ class EntryDetailViewController: UIViewController {
     }
     
     @IBAction func saveButtonTapped(_ sender: Any) {
-        if let _ = entry {
-            print("to be implemented tomorrow")
+        guard let title = titleTextField.text, !title.isEmpty,
+              let body = bodyTextField.text, !body.isEmpty,
+              let journal = journal else { return }
+        
+        if let entry = entry {
+            EntryController.updateEntry(entry: entry, newTitle: title, newBody: body)
+        } else {
+            EntryController.createEntryWith(title: title, body: body, journal: journal)
         }
         
-        guard let title = titleTextField.text, !title.isEmpty,
-              let body = bodyTextField.text, !body.isEmpty else { return }
-        
-        EntryController.sharedInstance.createEntry(title: title, body: body)
+        navigationController?.popViewController(animated: true)
     }
     
     @IBAction func clearButtonTapped(_ sender: Any) {

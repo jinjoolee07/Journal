@@ -8,8 +8,8 @@
 import Foundation
 
 class Entry : Codable {
-    let title: String
-    let body: String
+    var title: String
+    var body: String
     let timeStamp: Date
     let uuid: String
 

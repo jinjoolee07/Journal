@@ -8,21 +8,22 @@
 import UIKit
 
 class EntryListTableViewController: UITableViewController {
+    
+    var journal: Journal?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.reloadData()
-        EntryController.sharedInstance.loadFromPersistenceStore()
         
     }
 
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return EntryController.sharedInstance.entries.count
+        return journal?.entries.count ?? 0
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         tableView.reloadData()
     }
 
@@ -30,9 +31,12 @@ class EntryListTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "entryCell", for: indexPath)
 
-        let entry = EntryController.sharedInstance.entries[indexPath.row]
+        guard let journal = journal else { return cell }
+        
+        let entry = journal.entries[indexPath.row]
         
         cell.textLabel?.text = entry.title
+        cell.detailTextLabel?.text = entry.body
 
         return cell
     }
@@ -40,9 +44,9 @@ class EntryListTableViewController: UITableViewController {
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            
-            let entryToDelete = EntryController.sharedInstance.entries[indexPath.row]
-            EntryController.sharedInstance.deleteEntry(entry: entryToDelete)
+            guard let journal = journal else { return }
+            let entryToDelete = journal.entries[indexPath.row]
+            EntryController.deleteEntry(entry: entryToDelete, journal: journal)
             
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
@@ -50,13 +54,12 @@ class EntryListTableViewController: UITableViewController {
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let destinationVC = segue.destination as? EntryDetailViewController else { return }
+        destinationVC.journal = journal
         
         if segue.identifier == "toDetailVC" {
             if let index = tableView.indexPathForSelectedRow {
-                guard let destinationVC = segue.destination as? EntryDetailViewController else { return }
-                
-                let entryToSend = EntryController.sharedInstance.entries[index.row]
-                
+                let entryToSend = journal?.entries[index.row]
                 destinationVC.entry = entryToSend
             }
         }
